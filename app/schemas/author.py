@@ -1,7 +1,6 @@
-from typing import List
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AuthorResponse(BaseModel):
@@ -14,9 +13,8 @@ class AuthorResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class AuthorsResponse(BaseModel):
-    limit: int = 20
-    skip: int = 0
-    search: str = ""
-    count: int
-    result: List[AuthorResponse]
+class AuthorCreate(BaseModel):
+    first_name: str = Field(max_length=100)
+    last_name: str = Field(max_length=100)
+    bio: str = ""
+    born_date: datetime | None = None

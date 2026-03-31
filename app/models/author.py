@@ -9,7 +9,7 @@ from app.database import Base
 class Author(Base):
     __tablename__ = "authors"
 
-    id: Mapped[int] = mapped_column(primary_key=True, unique=True, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True, nullable=False)
     first_name: Mapped[str] = mapped_column(String(length=100), nullable=False)
     last_name: Mapped[str] = mapped_column(String(length=100), nullable=False)
     bio: Mapped[str] = mapped_column(Text)
