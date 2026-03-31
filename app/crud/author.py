@@ -4,7 +4,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.models.author import Author
-from app.schemas.author import AuthorCreate
+from app.schemas.author import AuthorCreate, AuthorUpdate
 
 
 def get_authors(
@@ -40,3 +40,27 @@ def create_author(db: Session, data: AuthorCreate) -> Author:
     db.refresh(author)
 
     return author
+
+
+def get_author(db: Session, id: int) -> Author | None:
+    author = db.query(Author).get(id)
+
+    return author
+
+
+def update_author(db: Session, existing_author: Author, data: AuthorUpdate) -> Author:
+    existing_author.first_name = (
+        data.first_name if data.first_name else existing_author.first_name
+    )
+    existing_author.last_name = (
+        data.last_name if data.last_name else existing_author.last_name
+    )
+    existing_author.bio = data.bio if data.bio else existing_author.bio
+    existing_author.born_date = (
+        data.born_date if data.born_date else existing_author.born_date
+    )
+
+    db.add(existing_author)
+    db.commit()
+
+    return existing_author
