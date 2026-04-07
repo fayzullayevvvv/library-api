@@ -1,6 +1,8 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query, Path, HTTPException, Body, status
+from fastapi import APIRouter, Query, Path, HTTPException, Body, status, Depends
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import Session
 
 from app.dependencies import get_db
 from app.crud.author import (
@@ -21,17 +23,25 @@ from app.schemas.author import (
 )
 from app.schemas.genre import GenreResponse
 from app.models import Genre
+from app.security import verify_token
 
 router = APIRouter(tags=["authors"])
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
 @router.get("/api/authors", response_model=AuthorsResponse, status_code=200)
 async def get_authors_view(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Annotated[Session, Depends(get_db)],
     search: Annotated[str, Query()] = "",
     skip: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=0, le=100)] = 20,
 ):
-    db = next(get_db())
+    payload = verify_token(token)
+
+    if payload is None:
+        raise HTTPException(status_code=401, detail="invalid token.")
 
     authors = get_authors(db, search, skip, limit)
 
@@ -43,8 +53,15 @@ async def get_authors_view(
 
 
 @router.post("/api/authors", status_code=201)
-async def create_author_view(data: Annotated[Authorcreate, Body]):
-    db = next(get_db())
+async def create_author_view(
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Annotated[Session, Depends(get_db)],
+    data: Annotated[Authorcreate, Body],
+):
+    payload = verify_token(token)
+
+    if payload is None:
+        raise HTTPException(status_code=401, detail="invalid token.")
 
     author = create_author(
         db=db,
@@ -66,8 +83,15 @@ async def create_author_view(data: Annotated[Authorcreate, Body]):
 
 
 @router.get("/api/authors/{id}")
-async def get_author_by_id_view(id: Annotated[int, Path(gt=0)]):
-    db = next(get_db())
+async def get_author_by_id_view(
+    id: Annotated[int, Path(gt=0)],
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    payload = verify_token(token)
+
+    if payload is None:
+        raise HTTPException(status_code=401, detail="invalid token.")
 
     author = get_author_by_id(db=db, id=id)
 
@@ -84,9 +108,15 @@ async def get_author_by_id_view(id: Annotated[int, Path(gt=0)]):
 
 @router.patch("/api/authors/{id}")
 async def update_author_by_id_view(
-    id: Annotated[int, Path(gt=0)], data: Annotated[AuthorUpdate | None, Body] = None
+    id: Annotated[int, Path(gt=0)],
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Annotated[Session, Depends(get_db)],
+    data: Annotated[AuthorUpdate | None, Body] = None,
 ):
-    db = next(get_db())
+    payload = verify_token(token)
+
+    if payload is None:
+        raise HTTPException(status_code=401, detail="invalid token.")
 
     author = update_author_by_id(
         db=db,
@@ -109,19 +139,31 @@ async def update_author_by_id_view(
 
 
 @router.delete("/api/authors/{id}", status_code=204)
-async def delete_author_by_id_view(id: Annotated[int, Path(gt=0)]):
-    db = next(get_db())
+async def delete_author_by_id_view(
+    id: Annotated[int, Path(gt=0)],
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Annotated[Session, Depends(get_db)],
+):
+    payload = verify_token(token)
 
-    author = delete_author_by_id(db=db, id=id)
+    if payload is None:
+        raise HTTPException(status_code=401, detail="invalid token.")
+
+    delete_author_by_id(db=db, id=id)
 
 
 @router.get("/api/authors/{id}/books")
 async def get_author_books_view(
     id: Annotated[int, Path(gt=0)],
+    token: Annotated[str, Depends(oauth2_scheme)],
+    db: Annotated[Session, Depends(get_db)],
     skip: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=0, le=100)] = 20,
 ):
-    db = next(get_db())
+    payload = verify_token(token)
+
+    if payload is None:
+        raise HTTPException(status_code=401, detail="invalid token.")
 
     author, books = get_author_books(db=db, id=id, skip=skip, limit=limit)
 
