@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query, Path, Body, Depends
 from sqlalchemy.orm import Session
 
-from app.dependencies import get_db, get_user
+from app.dependencies import get_db, get_user, get_admin, get_viewer, get_editor
 from app.crud.author import (
     get_authors,
     create_author,
@@ -28,7 +28,7 @@ router = APIRouter(tags=["authors"])
 
 @router.get("/api/authors", response_model=AuthorsResponse, status_code=200)
 async def get_authors_view(
-    user: Annotated[User, Depends(get_user)],
+    user: Annotated[User, Depends(get_viewer)],
     db: Annotated[Session, Depends(get_db)],
     search: Annotated[str, Query()] = "",
     skip: Annotated[int, Query(ge=0)] = 0,
@@ -45,7 +45,7 @@ async def get_authors_view(
 
 @router.post("/api/authors", status_code=201)
 async def create_author_view(
-    user: Annotated[User, Depends(get_user)],
+    user: Annotated[User, Depends(get_admin)],
     db: Annotated[Session, Depends(get_db)],
     data: Annotated[Authorcreate, Body],
 ):
@@ -71,7 +71,7 @@ async def create_author_view(
 @router.get("/api/authors/{id}")
 async def get_author_by_id_view(
     id: Annotated[int, Path(gt=0)],
-    user: Annotated[User, Depends(get_user)],
+    user: Annotated[User, Depends(get_editor)],
     db: Annotated[Session, Depends(get_db)],
 ):
     author = get_author_by_id(db=db, id=id)

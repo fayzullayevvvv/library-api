@@ -14,6 +14,7 @@ class User(Base):
         String(length=100), unique=True, nullable=False
     )
     hash_password: Mapped[str] = mapped_column(String(length=255), nullable=False)
+    role: Mapped[str] = mapped_column(String(length=20), nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(

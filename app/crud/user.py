@@ -9,8 +9,8 @@ def get_user_by_username(db: Session, username: str) -> User | None:
     return db.query(User).filter_by(username=username).first()
 
 
-def create_user(db: Session, username: str, hash_password: str) -> User:
-    user = User(username=username, hash_password=hash_password)
+def create_user(db: Session, username: str, hash_password: str, role: str) -> User:
+    user = User(username=username, hash_password=hash_password, role=role)
 
     db.add(user)
     db.commit()

@@ -36,3 +36,24 @@ def get_user(
         raise HTTPException(status_code=401, detail="invalid token.")
 
     return user
+
+
+def get_admin(user: Annotated[User, Depends(get_user)]) -> User:
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="you are not admin.")
+
+    return user
+
+
+def get_editor(user: Annotated[User, Depends(get_user)]) -> User:
+    if user.role != "editor":
+        raise HTTPException(status_code=403, detail="you are not editor.")
+
+    return user
+
+
+def get_viewer(user: Annotated[User, Depends(get_user)]) -> User:
+    if user.role != "viewer":
+        raise HTTPException(status_code=403, detail="you are not viewer.")
+
+    return user

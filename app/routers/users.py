@@ -28,6 +28,7 @@ async def register_view(
         db=db,
         username=data.username,
         hash_password=hash_password(data.password),
+        role=data.role,
     )
     return user
 
